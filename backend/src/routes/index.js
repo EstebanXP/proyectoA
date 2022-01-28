@@ -12,7 +12,7 @@ router.post("/Signup", async (req, res) => {
   const newUser = new User({ email, password, name, address });
   await newUser.save();
   const token = jsonT.sign({ _id: newUser._id }, process.env.Secret);
-  res.status(200).json({ token });
+  return res.status(200).json({ token });
 });
 
 router.post("/Signin", (req, res) => {
@@ -27,10 +27,42 @@ router.post("/Signin", (req, res) => {
   return res.status(200).json({ token });
 });
 
-// router.get("/Products",(req,res)=>{
-//     res.json([{
-//         _id
-//     }])
-// })
+router.get("/Products", verification, (req, res) => {
+  res.json([
+    {
+      _id: "1",
+      name: "producto 1",
+      desc: "description 1",
+      date: "22-01-2022",
+    },
+    {
+      _id: "2",
+      name: "producto 2",
+      desc: "description 2",
+      date: "22-01-2022",
+    },
+    {
+      _id: "3",
+      name: "producto 3",
+      desc: "description 3",
+      date: "22-01-2022",
+    },
+  ]);
+});
 
 module.exports = router;
+
+function verification(req, resp, next) {
+  if (!req.headers.authorization) {
+    return res.status(401).send("Authorization denied");
+  }
+  const token = req.headers.authorization.split(" ")[1];
+  if (token === "null") {
+    return res.status(401).send("Unauthorize Request");
+  }
+
+  const data = jsonT.verify(token, process.env.Secret);
+
+  req.userID = data._id;
+  next();
+}
